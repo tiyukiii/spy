@@ -57,6 +57,18 @@
     #spyCountBlock {
       margin-top: 10px;
     }
+
+    #allRoles {
+      margin-top: 20px;
+      font-size: 18px;
+      display: flex;
+      justify-content: center;
+    }
+
+    #allRoles div.role-list {
+      text-align: left;
+      display: inline-block;
+    }
   </style>
 </head>
 <body>
@@ -99,7 +111,7 @@
     <p>Можете начинать обсуждение!</p>
     <button onclick="location.reload()">Сыграть снова</button>
     <button onclick="showAllRoles()">Показать роли игроков</button>
-    <div id="allRoles" style="margin-top: 20px; font-size: 18px;"></div>
+    <div id="allRoles"></div>
   </div>
 
   <script>
@@ -211,12 +223,15 @@
     function showAllRoles() {
       const container = document.getElementById('allRoles');
       container.innerHTML = '<h3>Роли игроков:</h3>';
-      const list = document.createElement('ul');
+      const list = document.createElement('div');
+      list.className = 'role-list';
+
       for (let i = 0; i < playerNames.length; i++) {
-        const item = document.createElement('li');
+        const item = document.createElement('div');
         item.textContent = `${playerNames[i]} — ${players[i]}`;
         list.appendChild(item);
       }
+
       container.appendChild(list);
     }
 
