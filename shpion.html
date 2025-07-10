@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Игра Шпион</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+        .screen {
+            display: none;
+        }
+        .visible {
+            display: block;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 16px;
+        }
+        .card {
+            font-size: 24px;
+            margin: 30px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="startScreen" class="screen visible">
+        <h1>Игра "Шпион"</h1>
+        <label>Количество игроков:
+            <input type="number" id="playerCount" min="3" max="12" value="6">
+        </label><br>
+        <button onclick="startGame()">Начать игру</button>
+    </div>
+
+    <div id="cardScreen" class="screen">
+        <h2>Игрок <span id="currentPlayer"></span> из <span id="totalPlayers"></span></h2>
+        <button onclick="showCard()">Показать карточку</button>
+    </div>
+
+    <div id="showCardScreen" class="screen">
+        <div class="card" id="cardText">...</div>
+        <button onclick="nextPlayer()">Я посмотрел</button>
+    </div>
+
+    <div id="endScreen" class="screen">
+        <h2>Все игроки посмотрели свои карточки</h2>
+        <p>Можете начинать обсуждение!</p>
+        <button onclick="location.reload()">Сыграть снова</button>
+    </div>
+
+    <script>
+        const locations = [
+            "Лаба вкуса", "Хата Ярика", "Коргиш", "Джао Да", "Церковь",
+            "Подзеленье", "Кинотеатр", "Школа", "Поезд", "Алкомаркет",
+            "Парк", "Вкусно и точка", "Кабардинка", "Рыбинка"
+        ];
+
+        let players = [];
+        let currentPlayerIndex = 0;
+
+        function startGame() {
+            const count = parseInt(document.getElementById('playerCount').value);
+            if (isNaN(count) || count < 3) {
+                alert("Минимум 3 игрока!");
+                return;
+            }
+
+            // Выбираем случайную локацию и шпиона
+            const location = locations[Math.floor(Math.random() * locations.length)];
+            const spyIndex = Math.floor(Math.random() * count);
+
+            players = Array(count).fill().map((_, i) => i === spyIndex ? "Шпион" : location);
+
+            document.getElementById('totalPlayers').textContent = count;
+            currentPlayerIndex = 0;
+
+            showScreen("cardScreen");
+            updatePlayerNumber();
+        }
+
+        function updatePlayerNumber() {
+            document.getElementById('currentPlayer').textContent = currentPlayerIndex + 1;
+        }
+
+        function showCard() {
+            const card = players[currentPlayerIndex];
+            const text = card === "Шпион" ? "Ты — ШПИОН 👀" : `Локация: ${card}`;
+            document.getElementById('cardText').textContent = text;
+            showScreen("showCardScreen");
+        }
+
+        function nextPlayer() {
+            currentPlayerIndex++;
+            if (currentPlayerIndex >= players.length) {
+                showScreen("endScreen");
+            } else {
+                showScreen("cardScreen");
+                updatePlayerNumber();
+            }
+        }
+
+        function showScreen(screenId) {
+            document.querySelectorAll(".screen").forEach(div => div.classList.remove("visible"));
+            document.getElementById(screenId).classList.add("visible");
+        }
+    </script>
+</body>
+</html>
