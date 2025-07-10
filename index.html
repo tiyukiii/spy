@@ -1,114 +1,216 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <title>Игра Шпион</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            text-align: center;
-            background-color: #f5f5f5;
-            margin: 0;
-            padding: 20px;
-        }
-        .screen {
-            display: none;
-        }
-        .visible {
-            display: block;
-        }
-        button {
-            padding: 10px 20px;
-            margin: 10px;
-            font-size: 16px;
-        }
-        .card {
-            font-size: 24px;
-            margin: 30px 0;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Игра Шпион</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .screen {
+      display: none;
+    }
+
+    .visible {
+      display: block;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+    }
+
+    .card {
+      font-size: 24px;
+      margin: 30px 0;
+    }
+
+    input[type="text"],
+    input[type="number"] {
+      margin: 5px;
+      padding: 5px;
+      font-size: 14px;
+      width: 200px;
+    }
+
+    .mode-button {
+      margin: 5px;
+      padding: 8px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      border: 2px solid #333;
+      background-color: white;
+    }
+
+    .mode-button.active {
+      background-color: #333;
+      color: white;
+    }
+
+    #spyCountBlock {
+      margin-top: 10px;
+    }
+  </style>
 </head>
 <body>
+  <div id="startScreen" class="screen visible">
+    <h1>Игра "Шпион"</h1>
 
-    <div id="startScreen" class="screen visible">
-        <h1>Игра "Шпион"</h1>
-        <label>Количество игроков:
-            <input type="number" id="playerCount" min="3" max="20" value="6">
-        </label><br>
-        <button onclick="startGame()">Начать игру</button>
+    <label>Количество игроков:
+      <input type="number" id="playerCount" min="3" max="20" value="6" oninput="renderNameInputs()" />
+    </label>
+
+    <h3>Режим шпионов:</h3>
+    <div>
+      <button class="mode-button" onclick="setSpyMode('classic')">Классика (1 шпион)</button>
+      <button class="mode-button" onclick="setSpyMode('random')">Случайно</button>
+      <button class="mode-button" onclick="setSpyMode('custom')">Выбор вручную</button>
     </div>
 
-    <div id="cardScreen" class="screen">
-        <h2>Игрок <span id="currentPlayer"></span> из <span id="totalPlayers"></span></h2>
-        <button onclick="showCard()">Показать карточку</button>
+    <div id="spyCountBlock" style="display:none;">
+      <label>Количество шпионов:
+        <input type="number" id="spyCount" min="1" value="1" />
+      </label>
     </div>
 
-    <div id="showCardScreen" class="screen">
-        <div class="card" id="cardText">...</div>
-        <button onclick="nextPlayer()">Я посмотрел</button>
-    </div>
+    <div id="nameFields"></div>
+    <button onclick="startGame()">Начать игру</button>
+  </div>
 
-    <div id="endScreen" class="screen">
-        <h2>Все игроки посмотрели свои карточки</h2>
-        <p>Можете начинать обсуждение!</p>
-        <button onclick="location.reload()">Сыграть снова</button>
-    </div>
+  <div id="cardScreen" class="screen">
+    <h2><span id="currentPlayer"></span></h2>
+    <button onclick="showCard()">Показать карточку</button>
+  </div>
 
-    <script>
-        const locations = [
-            "Лаба вкуса", "Хата Ярика", "Коргиш", "Джао Да", "Церковь",
-            "Подзеленье", "Кинотеатр", "Школа", "Поезд", "Алкомаркет",
-            "Парк", "Вкусно и точка", "Кабардинка", "Рыбинка"
-        ];
+  <div id="showCardScreen" class="screen">
+    <div class="card" id="cardText">...</div>
+    <button onclick="nextPlayer()">Я посмотрел</button>
+  </div>
 
-        let players = [];
-        let currentPlayerIndex = 0;
+  <div id="endScreen" class="screen">
+    <h2>Все игроки посмотрели свои карточки</h2>
+    <p>Можете начинать обсуждение!</p>
+    <button onclick="location.reload()">Сыграть снова</button>
+  </div>
 
-        function startGame() {
-            const count = parseInt(document.getElementById('playerCount').value);
-            if (isNaN(count) || count < 3) {
-                alert("Минимум 3 игрока!");
-                return;
-            }
+  <script>
+    const locations = [
+      "Лаба вкуса", "Хата Ярика", "Коргиш", "Джао Да", "Церковь",
+      "Подзеленье", "Кинотеатр", "Школа", "Поезд", "Алкомаркет",
+      "Парк", "Вкусно и точка", "Кабардинка", "Рыбинка"
+    ];
 
-            // Выбираем случайную локацию и шпиона
-            const location = locations[Math.floor(Math.random() * locations.length)];
-            const spyIndex = Math.floor(Math.random() * count);
+    let players = [];
+    let playerNames = [];
+    let currentPlayerIndex = 0;
+    let spyMode = 'classic'; // classic | random | custom
 
-            players = Array(count).fill().map((_, i) => i === spyIndex ? "Шпион" : location);
+    function renderNameInputs() {
+      const count = parseInt(document.getElementById('playerCount').value);
+      const container = document.getElementById('nameFields');
+      container.innerHTML = '';
 
-            document.getElementById('totalPlayers').textContent = count;
-            currentPlayerIndex = 0;
+      for (let i = 0; i < count; i++) {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.placeholder = `Имя игрока ${i + 1}`;
+        input.id = `playerName${i}`;
+        container.appendChild(input);
+      }
+    }
 
-            showScreen("cardScreen");
-            updatePlayerNumber();
+    function setSpyMode(mode) {
+      spyMode = mode;
+      document.querySelectorAll('.mode-button').forEach(btn => btn.classList.remove('active'));
+      const buttons = document.getElementsByClassName('mode-button');
+      if (mode === 'classic') buttons[0].classList.add('active');
+      if (mode === 'random') buttons[1].classList.add('active');
+      if (mode === 'custom') buttons[2].classList.add('active');
+
+      // Показать/скрыть поле "Количество шпионов"
+      document.getElementById('spyCountBlock').style.display = mode === 'custom' ? 'block' : 'none';
+    }
+
+    function startGame() {
+      const count = parseInt(document.getElementById('playerCount').value);
+      if (isNaN(count) || count < 3) {
+        alert("Минимум 3 игрока!");
+        return;
+      }
+
+      let spyCount = 1;
+      if (spyMode === 'custom') {
+        spyCount = parseInt(document.getElementById('spyCount').value);
+        if (isNaN(spyCount) || spyCount < 1 || spyCount >= count) {
+          alert("Количество шпионов должно быть не меньше 1 и меньше количества игроков");
+          return;
         }
+      } else if (spyMode === 'random') {
+        spyCount = Math.floor(Math.random() * (count - 1)) + 1; // от 1 до count - 1
+      }
 
-        function updatePlayerNumber() {
-            document.getElementById('currentPlayer').textContent = currentPlayerIndex + 1;
-        }
+      const location = locations[Math.floor(Math.random() * locations.length)];
+      players = [];
+      playerNames = [];
 
-        function showCard() {
-            const card = players[currentPlayerIndex];
-            const text = card === "Шпион" ? "Ты — ШПИОН 👀" : `Локация: ${card}`;
-            document.getElementById('cardText').textContent = text;
-            showScreen("showCardScreen");
-        }
+      for (let i = 0; i < count; i++) {
+        const nameInput = document.getElementById(`playerName${i}`);
+        const name = nameInput?.value.trim() || `Игрок ${i + 1}`;
+        playerNames.push(name);
+        players.push(location); // по умолчанию - не шпион
+      }
 
-        function nextPlayer() {
-            currentPlayerIndex++;
-            if (currentPlayerIndex >= players.length) {
-                showScreen("endScreen");
-            } else {
-                showScreen("cardScreen");
-                updatePlayerNumber();
-            }
+      // Выбираем шпионов
+      const spyIndices = [];
+      while (spyIndices.length < spyCount) {
+        const index = Math.floor(Math.random() * count);
+        if (!spyIndices.includes(index)) {
+          spyIndices.push(index);
+          players[index] = "Шпион";
         }
+      }
 
-        function showScreen(screenId) {
-            document.querySelectorAll(".screen").forEach(div => div.classList.remove("visible"));
-            document.getElementById(screenId).classList.add("visible");
-        }
-    </script>
+      currentPlayerIndex = 0;
+      showScreen("cardScreen");
+      updatePlayerName();
+    }
+
+    function updatePlayerName() {
+      document.getElementById('currentPlayer').textContent = `Ход: ${playerNames[currentPlayerIndex]}`;
+    }
+
+    function showCard() {
+      const card = players[currentPlayerIndex];
+      const text = card === "Шпион" ? "Ты — ШПИОН 👀" : `Локация: ${card}`;
+      document.getElementById('cardText').textContent = text;
+      showScreen("showCardScreen");
+    }
+
+    function nextPlayer() {
+      currentPlayerIndex++;
+      if (currentPlayerIndex >= players.length) {
+        showScreen("endScreen");
+      } else {
+        showScreen("cardScreen");
+        updatePlayerName();
+      }
+    }
+
+    function showScreen(id) {
+      document.querySelectorAll(".screen").forEach(div => div.classList.remove("visible"));
+      document.getElementById(id).classList.add("visible");
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      renderNameInputs();
+      setSpyMode('classic'); // По умолчанию: классика
+    });
+  </script>
 </body>
 </html>
