@@ -65,7 +65,7 @@
       justify-content: center;
     }
 
-    #allRoles div.role-list {
+    #allRoles .role-list {
       text-align: left;
       display: inline-block;
     }
@@ -222,9 +222,14 @@
 
     function showAllRoles() {
       const container = document.getElementById('allRoles');
-      container.innerHTML = '<h3>Роли игроков:</h3>';
+      container.innerHTML = ''; // очистка
+
       const list = document.createElement('div');
       list.className = 'role-list';
+
+      const title = document.createElement('h3');
+      title.textContent = 'Роли игроков:';
+      list.appendChild(title);
 
       for (let i = 0; i < playerNames.length; i++) {
         const item = document.createElement('div');
