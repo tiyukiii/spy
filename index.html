@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <title>Игра Шпион</title>
+  <meta charset="UTF-8">
+  <title>Игры: Шпион и Мафия</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -11,35 +11,25 @@
       margin: 0;
       padding: 20px;
     }
-
-    .screen {
-      display: none;
-    }
-
-    .visible {
-      display: block;
-    }
-
+    .screen { display: none; }
+    .visible { display: block; }
     button {
       padding: 10px 20px;
       margin: 10px;
       font-size: 16px;
       cursor: pointer;
     }
-
     .card {
-      font-size: 24px;
+      font-size: 20px;
       margin: 30px 0;
+      white-space: pre-wrap;
     }
-
-    input[type="text"],
-    input[type="number"] {
+    input[type="text"], input[type="number"] {
       margin: 5px;
       padding: 5px;
       font-size: 14px;
       width: 200px;
     }
-
     .mode-button {
       margin: 5px;
       padding: 8px 16px;
@@ -48,202 +38,302 @@
       border: 2px solid #333;
       background-color: white;
     }
-
     .mode-button.active {
       background-color: #333;
       color: white;
     }
-
-    #spyCountBlock {
-      margin-top: 10px;
-    }
-
-    #allRoles {
+    #spyCountBlock, #allRoles, #mafiaRoles {
       margin-top: 20px;
-      font-size: 18px;
-      display: flex;
-      justify-content: center;
     }
-
-    #allRoles .role-list {
+    .role-list {
       text-align: left;
       display: inline-block;
+    }
+    .role-input {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 4px 0;
+    }
+    .role-input label {
+      width: 100px;
+      text-align: right;
+      margin-right: 10px;
     }
   </style>
 </head>
 <body>
-  <div id="startScreen" class="screen visible">
-    <h1>Игра "Шпион"</h1>
 
-    <label>Количество игроков:
-      <input type="number" id="playerCount" min="3" max="20" value="6" oninput="renderNameInputs()" />
+<div id="mainMenu" class="screen visible">
+  <h1>Выберите игру</h1>
+  <button onclick="selectGame('spy')">Играть в Шпиона</button>
+  <button onclick="selectGame('mafia')">Играть в Мафию</button>
+</div>
+
+<!-- Экраны ШПИОНА -->
+<div id="startScreen" class="screen">
+  <h1>Игра "Шпион"</h1>
+  <label>Количество игроков:
+    <input type="number" id="playerCount" min="3" max="20" value="6" oninput="renderNameInputs()" />
+  </label>
+  <h3>Режим шпионов:</h3>
+  <div>
+    <button class="mode-button" onclick="setSpyMode('classic')">Классика (1 шпион)</button>
+    <button class="mode-button" onclick="setSpyMode('random')">Случайно</button>
+    <button class="mode-button" onclick="setSpyMode('custom')">Выбор вручную</button>
+  </div>
+  <div id="spyCountBlock" style="display:none;">
+    <label>Количество шпионов:
+      <input type="number" id="spyCount" min="1" value="1" />
     </label>
-
-    <h3>Режим шпионов:</h3>
-    <div>
-      <button class="mode-button" onclick="setSpyMode('classic')">Классика (1 шпион)</button>
-      <button class="mode-button" onclick="setSpyMode('random')">Случайно</button>
-      <button class="mode-button" onclick="setSpyMode('custom')">Выбор вручную</button>
-    </div>
-
-    <div id="spyCountBlock" style="display:none;">
-      <label>Количество шпионов:
-        <input type="number" id="spyCount" min="1" value="1" />
-      </label>
-    </div>
-
-    <div id="nameFields"></div>
-    <button onclick="startGame()">Начать игру</button>
   </div>
+  <div id="nameFields"></div>
+  <button onclick="startGame()">Начать игру</button>
+  <br><br>
+  <button onclick="returnToMenu()">Вернуться в меню</button>
+</div>
 
-  <div id="cardScreen" class="screen">
-    <h2><span id="currentPlayer"></span></h2>
-    <button onclick="showCard()">Показать карточку</button>
-  </div>
+<div id="cardScreen" class="screen">
+  <h2><span id="currentPlayer"></span></h2>
+  <button onclick="showCard()">Показать карточку</button>
+</div>
 
-  <div id="showCardScreen" class="screen">
-    <div class="card" id="cardText">...</div>
-    <button onclick="nextPlayer()">Я посмотрел</button>
-  </div>
+<div id="showCardScreen" class="screen">
+  <div class="card" id="cardText">...</div>
+  <button onclick="nextPlayer()">Я посмотрел</button>
+</div>
 
-  <div id="endScreen" class="screen">
-    <h2>Все игроки посмотрели свои карточки</h2>
-    <p>Можете начинать обсуждение!</p>
-    <button onclick="location.reload()">Сыграть снова</button>
-    <button onclick="showAllRoles()">Показать роли игроков</button>
-    <div id="allRoles"></div>
-  </div>
+<div id="endScreen" class="screen">
+  <h2>Все игроки посмотрели свои карточки</h2>
+  <button onclick="location.reload()">Сыграть снова</button>
+  <button onclick="showAllRoles()">Показать роли игроков</button>
+  <div id="allRoles"></div>
+</div>
+<!-- Экраны МАФИИ -->
+<div id="mafiaGameScreen" class="screen">
+  <h1>Игра "Мафия"</h1>
+  <label>Количество игроков:
+    <input type="number" id="mafiaPlayerCount" min="5" max="20" value="7" oninput="renderMafiaInputs()" />
+  </label>
+  <h3>Укажите количество каждой роли:</h3>
+  <div id="roleInputs"></div>
+  <h3>Имена игроков:</h3>
+  <div id="mafiaNameFields"></div>
+  <button onclick="startMafiaGame()">Начать игру</button>
+  <br><br>
+  <button onclick="returnToMenu()">Вернуться в меню</button>
+</div>
 
-  <script>
-    const locations = [
-      "Лаба вкуса", "Хата Ярика", "Коргиш", "Джао Да", "Церковь",
-      "Подзеленье", "Кинотеатр", "Школа", "Поезд", "Алкомаркет",
-      "Парк", "Вкусно и точка", "Кабардинка", "Рыбинка"
-    ];
+<div id="mafiaCardScreen" class="screen">
+  <h2><span id="mafiaCurrentPlayer"></span></h2>
+  <button onclick="showMafiaCard()">Показать карточку</button>
+</div>
 
-    let players = [];
-    let playerNames = [];
-    let currentPlayerIndex = 0;
-    let spyMode = 'classic';
+<div id="mafiaShowCardScreen" class="screen">
+  <div class="card" id="mafiaCardText">...</div>
+  <button onclick="nextMafiaPlayer()">Я посмотрел</button>
+</div>
 
-    function renderNameInputs() {
-      const count = parseInt(document.getElementById('playerCount').value);
-      const container = document.getElementById('nameFields');
-      container.innerHTML = '';
+<div id="mafiaEndScreen" class="screen">
+  <h2>Все игроки получили свои роли</h2>
+  <button onclick="location.reload()">Сыграть снова</button>
+  <button onclick="showMafiaRoles()">Показать роли игроков</button>
+  <div id="mafiaRoles"></div>
+</div>
 
-      for (let i = 0; i < count; i++) {
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.placeholder = `Имя игрока ${i + 1}`;
-        input.id = `playerName${i}`;
-        container.appendChild(input);
-      }
+<script>
+const locations = ["Лаба вкуса", "Хата Ярика", "Коргиш", "Джао Да", "Церковь", "Подзеленье", "Кинотеатр", "Школа", "Поезд", "Алкомаркет", "Парк", "Вкусно и точка", "Кабардинка", "Рыбинка"];
+const mafiaRoles = ["Мирный", "Мафия", "Дон мафии", "Комиссар", "Доктор", "Путана", "Маньяк"];
+const mafiaRoleDescriptions = {
+  "Мирный": "Самый обычный житель. Не имеет ночных действий. Главная сила — обсуждение и голосование.",
+  "Мафия": "Просыпается ночью с другими мафиози и выбирает жертву. Убивает одного игрока за ночь.",
+  "Дон мафии": "Глава мафии. Кроме убийства может проверять игроков — ищет комиссара.",
+  "Комиссар": "Каждую ночь проверяет одного игрока — узнает, мафия он или нет. Если он показывает на маньяка, то ведущий показывает нет. Для комиссара маньяк считается за обычного игрока",
+  "Доктор": "Может вылечить одного игрока от выстрела мафии. Себя лечит только один раз за игру. Нельзя показывать на одного игрока 2 хода подряд.",
+  "Путана": "Блокирует действия выбранного игрока ночью. Не может выбирать одного и того же 2 ночи подряд.",
+  "Маньяк": "Убивает по одному игроку за ночь. Играет сам за себя. Может отказаться от убийства."
+};
+let players = [], playerNames = [], currentPlayerIndex = 0, spyMode = 'classic';
+let mafiaPlayers = [], mafiaPlayerNames = [], mafiaCurrentPlayerIndex = 0, selectedRoles = [];
+
+function showScreen(id) {
+  document.querySelectorAll(".screen").forEach(div => div.classList.remove("visible"));
+  document.getElementById(id).classList.add("visible");
+}
+function selectGame(game) {
+  if (game === 'spy') showScreen('startScreen');
+  else if (game === 'mafia') showScreen('mafiaGameScreen');
+}
+function returnToMenu() { showScreen('mainMenu'); }
+
+// ---------- ШПИОН ----------
+function renderNameInputs() {
+  const count = parseInt(document.getElementById('playerCount').value);
+  const container = document.getElementById('nameFields');
+  container.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = `Имя игрока ${i + 1}`;
+    input.id = `playerName${i}`;
+    container.appendChild(input);
+  }
+}
+function setSpyMode(mode) {
+  spyMode = mode;
+  document.querySelectorAll('.mode-button').forEach(btn => btn.classList.remove('active'));
+  document.querySelectorAll('.mode-button')[mode === 'classic' ? 0 : mode === 'random' ? 1 : 2].classList.add('active');
+  document.getElementById('spyCountBlock').style.display = mode === 'custom' ? 'block' : 'none';
+}
+function startGame() {
+  const count = parseInt(document.getElementById('playerCount').value);
+  if (isNaN(count) || count < 3) return alert("Минимум 3 игрока!");
+  let spyCount = spyMode === 'random' ? Math.floor(Math.random() * (count - 1)) + 1 :
+                 spyMode === 'custom' ? parseInt(document.getElementById('spyCount').value) : 1;
+  if (spyMode === 'custom' && (isNaN(spyCount) || spyCount < 1 || spyCount >= count)) return alert("Неверное количество шпионов!");
+  const location = locations[Math.floor(Math.random() * locations.length)];
+  players = [], playerNames = [];
+  for (let i = 0; i < count; i++) {
+    const name = document.getElementById(`playerName${i}`)?.value.trim() || `Игрок ${i + 1}`;
+    playerNames.push(name);
+    players.push(location);
+  }
+  const spyIndices = [];
+  while (spyIndices.length < spyCount) {
+    const index = Math.floor(Math.random() * count);
+    if (!spyIndices.includes(index)) {
+      spyIndices.push(index);
+      players[index] = "Шпион";
     }
+  }
+  currentPlayerIndex = 0;
+  showScreen("cardScreen");
+  updatePlayerName();
+}
+function updatePlayerName() {
+  document.getElementById('currentPlayer').textContent = `Ход: ${playerNames[currentPlayerIndex]}`;
+}
+function showCard() {
+  const card = players[currentPlayerIndex];
+  document.getElementById('cardText').textContent = card === "Шпион" ? "Ты — ШПИОН 👀" : `Локация: ${card}`;
+  showScreen("showCardScreen");
+}
+function nextPlayer() {
+  currentPlayerIndex++;
+  if (currentPlayerIndex >= players.length) showScreen("endScreen");
+  else {
+    showScreen("cardScreen");
+    updatePlayerName();
+  }
+}
+function showAllRoles() {
+  const container = document.getElementById('allRoles');
+  container.innerHTML = '';
+  const list = document.createElement('div');
+  list.className = 'role-list';
+  list.innerHTML = '<h3>Роли игроков:</h3>';
+  playerNames.forEach((name, i) => {
+    const item = document.createElement('div');
+    item.textContent = `${name} — ${players[i]}`;
+    list.appendChild(item);
+  });
+  container.appendChild(list);
+}
 
-    function setSpyMode(mode) {
-      spyMode = mode;
-      document.querySelectorAll('.mode-button').forEach(btn => btn.classList.remove('active'));
-      const buttons = document.getElementsByClassName('mode-button');
-      if (mode === 'classic') buttons[0].classList.add('active');
-      if (mode === 'random') buttons[1].classList.add('active');
-      if (mode === 'custom') buttons[2].classList.add('active');
-
-      document.getElementById('spyCountBlock').style.display = mode === 'custom' ? 'block' : 'none';
+// ---------- МАФИЯ ----------
+function renderMafiaInputs() {
+  const count = parseInt(document.getElementById('mafiaPlayerCount').value);
+  renderRoleInputs();
+  renderMafiaNameInputs(count);
+}
+function renderRoleInputs() {
+  const container = document.getElementById('roleInputs');
+  container.innerHTML = '';
+  mafiaRoles.forEach(role => {
+    const div = document.createElement('div');
+    div.className = 'role-input';
+    const label = document.createElement('label');
+    label.textContent = role;
+    const input = document.createElement('input');
+    input.type = 'number';
+    input.min = '0';
+    input.value = '0';
+    input.id = `count-${role}`;
+    div.appendChild(label);
+    div.appendChild(input);
+    container.appendChild(div);
+  });
+}
+function renderMafiaNameInputs(count) {
+  const container = document.getElementById('mafiaNameFields');
+  container.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.placeholder = `Имя игрока ${i + 1}`;
+    input.id = `mafiaPlayerName${i}`;
+    container.appendChild(input);
+  }
+}
+function startMafiaGame() {
+  const count = parseInt(document.getElementById('mafiaPlayerCount').value);
+  if (isNaN(count) || count < 5) return alert("Минимум 5 игроков!");
+  selectedRoles = [];
+  let totalSelected = 0;
+  mafiaRoles.forEach(role => {
+    const qty = parseInt(document.getElementById(`count-${role}`).value);
+    if (!isNaN(qty) && qty > 0) {
+      for (let i = 0; i < qty; i++) selectedRoles.push(role);
+      totalSelected += qty;
     }
+  });
+  if (totalSelected !== count) return alert(`Сумма ролей (${totalSelected}) ≠ количеству игроков (${count})`);
+  mafiaPlayers = selectedRoles.sort(() => Math.random() - 0.5);
+  mafiaPlayerNames = [];
+  for (let i = 0; i < count; i++) {
+    const name = document.getElementById(`mafiaPlayerName${i}`)?.value.trim() || `Игрок ${i + 1}`;
+    mafiaPlayerNames.push(name);
+  }
+  mafiaCurrentPlayerIndex = 0;
+  showScreen("mafiaCardScreen");
+  updateMafiaPlayerName();
+}
+function updateMafiaPlayerName() {
+  document.getElementById('mafiaCurrentPlayer').textContent = `Ход: ${mafiaPlayerNames[mafiaCurrentPlayerIndex]}`;
+}
+function showMafiaCard() {
+  const role = mafiaPlayers[mafiaCurrentPlayerIndex];
+  const description = mafiaRoleDescriptions[role] || "Описание отсутствует.";
+  document.getElementById('mafiaCardText').innerHTML = `<strong>Твоя роль:</strong> ${role}<br><br><small>${description.replace(/\\n/g, "<br>")}</small>`;
+  showScreen("mafiaShowCardScreen");
+}
+function nextMafiaPlayer() {
+  mafiaCurrentPlayerIndex++;
+  if (mafiaCurrentPlayerIndex >= mafiaPlayers.length) showScreen("mafiaEndScreen");
+  else {
+    showScreen("mafiaCardScreen");
+    updateMafiaPlayerName();
+  }
+}
+function showMafiaRoles() {
+  const container = document.getElementById('mafiaRoles');
+  container.innerHTML = '';
+  const list = document.createElement('div');
+  list.className = 'role-list';
+  list.innerHTML = '<h3>Роли игроков:</h3>';
+  mafiaPlayerNames.forEach((name, i) => {
+    const item = document.createElement('div');
+    item.textContent = `${name} — ${mafiaPlayers[i]}`;
+    list.appendChild(item);
+  });
+  container.appendChild(list);
+}
 
-    function startGame() {
-      const count = parseInt(document.getElementById('playerCount').value);
-      if (isNaN(count) || count < 3) {
-        alert("Минимум 3 игрока!");
-        return;
-      }
-
-      let spyCount = 1;
-      if (spyMode === 'custom') {
-        spyCount = parseInt(document.getElementById('spyCount').value);
-        if (isNaN(spyCount) || spyCount < 1 || spyCount >= count) {
-          alert("Количество шпионов должно быть не меньше 1 и меньше количества игроков");
-          return;
-        }
-      } else if (spyMode === 'random') {
-        spyCount = Math.floor(Math.random() * (count - 1)) + 1;
-      }
-
-      const location = locations[Math.floor(Math.random() * locations.length)];
-      players = [];
-      playerNames = [];
-
-      for (let i = 0; i < count; i++) {
-        const nameInput = document.getElementById(`playerName${i}`);
-        const name = nameInput?.value.trim() || `Игрок ${i + 1}`;
-        playerNames.push(name);
-        players.push(location);
-      }
-
-      const spyIndices = [];
-      while (spyIndices.length < spyCount) {
-        const index = Math.floor(Math.random() * count);
-        if (!spyIndices.includes(index)) {
-          spyIndices.push(index);
-          players[index] = "Шпион";
-        }
-      }
-
-      currentPlayerIndex = 0;
-      showScreen("cardScreen");
-      updatePlayerName();
-    }
-
-    function updatePlayerName() {
-      document.getElementById('currentPlayer').textContent = `Ход: ${playerNames[currentPlayerIndex]}`;
-    }
-
-    function showCard() {
-      const card = players[currentPlayerIndex];
-      const text = card === "Шпион" ? "Ты — ШПИОН 👀" : `Локация: ${card}`;
-      document.getElementById('cardText').textContent = text;
-      showScreen("showCardScreen");
-    }
-
-    function nextPlayer() {
-      currentPlayerIndex++;
-      if (currentPlayerIndex >= players.length) {
-        showScreen("endScreen");
-      } else {
-        showScreen("cardScreen");
-        updatePlayerName();
-      }
-    }
-
-    function showScreen(id) {
-      document.querySelectorAll(".screen").forEach(div => div.classList.remove("visible"));
-      document.getElementById(id).classList.add("visible");
-    }
-
-    function showAllRoles() {
-      const container = document.getElementById('allRoles');
-      container.innerHTML = ''; // очистка
-
-      const list = document.createElement('div');
-      list.className = 'role-list';
-
-      const title = document.createElement('h3');
-      title.textContent = 'Роли игроков:';
-      list.appendChild(title);
-
-      for (let i = 0; i < playerNames.length; i++) {
-        const item = document.createElement('div');
-        item.textContent = `${playerNames[i]} — ${players[i]}`;
-        list.appendChild(item);
-      }
-
-      container.appendChild(list);
-    }
-
-    document.addEventListener("DOMContentLoaded", () => {
-      renderNameInputs();
-      setSpyMode('classic');
-    });
-  </script>
+document.addEventListener("DOMContentLoaded", () => {
+  renderNameInputs();
+  renderMafiaInputs();
+  setSpyMode('classic');
+});
+</script>
 </body>
 </html>
