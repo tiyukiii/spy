@@ -24,6 +24,7 @@
       padding: 10px 20px;
       margin: 10px;
       font-size: 16px;
+      cursor: pointer;
     }
 
     .card {
@@ -97,6 +98,8 @@
     <h2>Все игроки посмотрели свои карточки</h2>
     <p>Можете начинать обсуждение!</p>
     <button onclick="location.reload()">Сыграть снова</button>
+    <button onclick="showAllRoles()">Показать роли игроков</button>
+    <div id="allRoles" style="margin-top: 20px; font-size: 18px;"></div>
   </div>
 
   <script>
@@ -109,7 +112,7 @@
     let players = [];
     let playerNames = [];
     let currentPlayerIndex = 0;
-    let spyMode = 'classic'; // classic | random | custom
+    let spyMode = 'classic';
 
     function renderNameInputs() {
       const count = parseInt(document.getElementById('playerCount').value);
@@ -133,7 +136,6 @@
       if (mode === 'random') buttons[1].classList.add('active');
       if (mode === 'custom') buttons[2].classList.add('active');
 
-      // Показать/скрыть поле "Количество шпионов"
       document.getElementById('spyCountBlock').style.display = mode === 'custom' ? 'block' : 'none';
     }
 
@@ -152,7 +154,7 @@
           return;
         }
       } else if (spyMode === 'random') {
-        spyCount = Math.floor(Math.random() * (count - 1)) + 1; // от 1 до count - 1
+        spyCount = Math.floor(Math.random() * (count - 1)) + 1;
       }
 
       const location = locations[Math.floor(Math.random() * locations.length)];
@@ -163,10 +165,9 @@
         const nameInput = document.getElementById(`playerName${i}`);
         const name = nameInput?.value.trim() || `Игрок ${i + 1}`;
         playerNames.push(name);
-        players.push(location); // по умолчанию - не шпион
+        players.push(location);
       }
 
-      // Выбираем шпионов
       const spyIndices = [];
       while (spyIndices.length < spyCount) {
         const index = Math.floor(Math.random() * count);
@@ -207,9 +208,21 @@
       document.getElementById(id).classList.add("visible");
     }
 
+    function showAllRoles() {
+      const container = document.getElementById('allRoles');
+      container.innerHTML = '<h3>Роли игроков:</h3>';
+      const list = document.createElement('ul');
+      for (let i = 0; i < playerNames.length; i++) {
+        const item = document.createElement('li');
+        item.textContent = `${playerNames[i]} — ${players[i]}`;
+        list.appendChild(item);
+      }
+      container.appendChild(list);
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
       renderNameInputs();
-      setSpyMode('classic'); // По умолчанию: классика
+      setSpyMode('classic');
     });
   </script>
 </body>
